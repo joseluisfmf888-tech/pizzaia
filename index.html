@@ -1,100 +1,78 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PizzaIA V5 · Conversación corregida</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PizzaIA V8 · Micrófono corregido</title>
 <style>
-:root{--bg:#0b0b0f;--card:#17171f;--line:#2b2b35;--orange:#ff5b35;--muted:#aaa}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}
+body{margin:0;background:#0b0b0f;color:#fff;font-family:Arial,sans-serif}
 .wrap{max-width:980px;margin:auto;padding:28px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;margin:16px 0}
-h1{font-size:42px;margin:0 0 12px}.orange{color:var(--orange)}.muted{color:var(--muted)}
+.card{background:#17171f;border:1px solid #2b2b35;border-radius:20px;padding:22px;margin:16px 0}
+h1{font-size:42px;margin:0 0 12px}.orange{color:#ff5b35}.muted{color:#aaa}
 button{border:0;border-radius:12px;padding:14px 18px;font-weight:bold;font-size:16px;cursor:pointer;margin:4px}
-.start{background:var(--orange);color:#fff}.stop{background:#3b171c;color:#fff}.ghost{background:#292933;color:#fff}
+.start{background:#ff5b35;color:#fff}.stop{background:#3b171c;color:#fff}.test{background:#292933;color:#fff}
 .orb{width:150px;height:150px;border-radius:50%;margin:22px auto;display:grid;place-items:center;font-size:60px;background:radial-gradient(circle at 35% 30%,#ff9d66,#ff5b35 45%,#a82216);box-shadow:0 0 65px rgba(255,91,53,.25)}
 .listen{outline:5px solid rgba(104,229,143,.35)}.speak{outline:5px solid rgba(255,196,77,.35)}
 .controls{text-align:center}.status{text-align:center;font-weight:bold;margin:12px}
-.chat{min-height:340px;max-height:520px;overflow:auto;background:#0f0f14;border-radius:16px;padding:14px}
-.a,.u{padding:12px;border-radius:12px;margin:9px 0;max-width:82%;line-height:1.4}.a{background:#382018}.u{background:#292933;margin-left:auto}
+.chat{min-height:320px;max-height:500px;overflow:auto;background:#0f0f14;border-radius:16px;padding:14px}
+.a,.u{padding:12px;border-radius:12px;margin:9px 0;max-width:82%;line-height:1.45}.a{background:#382018}.u{background:#292933;margin-left:auto}
+.order{line-height:1.7}.order div{padding:4px 0;border-bottom:1px solid #292933}
 .small{font-size:13px;line-height:1.5}
-.orderline{padding:6px 0;border-bottom:1px solid #2a2a31}
-textarea{width:100%;min-height:70px;border-radius:12px;border:1px solid #333;background:#0f0f14;color:#fff;padding:12px}
-@media(max-width:700px){.wrap{padding:14px}h1{font-size:34px}}
 </style>
 </head>
-<body>
-<div class="wrap">
-  <div class="card">
-    <h1>Pizza<span class="orange">IA</span> V5</h1>
-    <p class="muted">Versión corregida: no confunde “Barbacoa” con “Barbacoa Ibérica / Cremosa / Kebab / Dolce”. Mantiene el paso actual de la conversación.</p>
-    <div id="orb" class="orb">🍕</div>
-    <div id="status" class="status">Llamada detenida</div>
-    <div class="controls">
-      <button class="start" onclick="startCall()">📞 Iniciar llamada</button>
-      <button class="stop" onclick="endCall()">⛔ Finalizar llamada</button>
-      <button class="ghost" onclick="demoText()">⌨️ Probar escribiendo</button>
-    </div>
-  </div>
+<body><div class="wrap">
+<div class="card">
+<h1>Pizza<span class="orange">IA</span> V8</h1>
+<p class="muted">Versión corregida: comprueba el micrófono real, muestra errores de voz y reinicia la escucha automáticamente.</p>
+<div id="orb" class="orb">🍕</div>
+<div id="status" class="status">Llamada detenida</div>
+<div class="controls">
+<button class="start" onclick="startCall()">📞 Iniciar llamada</button>
+<button class="stop" onclick="endCall()">⛔ Finalizar llamada</button>
+<button class="test" onclick="testText()">⌨️ Probar por texto</button>
+</div>
+</div>
 
-  <div class="card">
-    <h2>💬 Conversación</h2>
-    <div id="chat" class="chat"></div>
-  </div>
-
-  <div class="card">
-    <h2>🧠 Pedido actual</h2>
-    <div id="orderView" class="small muted">Todavía no hay productos.</div>
-  </div>
-
-  <div class="card small muted">
-    Prueba 1: “Quiero una Barbacoa Ibérica mediana” → “masa fina” → “sin beicon” → “eso es todo” → “a domicilio”.<br>
-    Prueba 2: “¿Qué lleva la Carbonara?” → “ponme una mediana” → “clásica” → “añade una 4 quesos familiar”.<br>
-    Prueba 3: “Quiero una Barbacoa cremosa” (ya no debe añadir también una Barbacoa normal).
-  </div>
+<div class="card"><h2>💬 Conversación</h2><div id="chat" class="chat"></div></div>
+<div class="card"><h2>🧠 Pedido memorizado</h2><div id="orderView" class="order muted">Sin pedido todavía.</div></div>
+<div class="card small muted"><b>Diagnóstico:</b> tras pulsar “Iniciar llamada”, debe pasar por “Comprobando micrófono” → “PizzaIA hablando” → “Escuchando”. Si falla, verás el error exacto arriba.</div>
+<div class="card small muted">
+<b>Importante:</b> al pulsar “Iniciar llamada”, permite el micrófono una sola vez. Si Chrome o Edge muestra permiso de sonido, selecciona “Permitir siempre para este sitio”.<br><br>
+Prueba exacta: “Quiero una barbacoa mediana” → “masa fina” → “quítale el beicon” → “ponle jamón extra” → “dime mi pedido”.
+</div>
 </div>
 
 <script>
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition=null, callActive=false, listening=false, speaking=false;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let recognition=null,callActive=false,listening=false,speaking=false,audioUnlocked=false;
 
-function norm(s){
-  return String(s||"").toLowerCase()
-   .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-   .replace(/[^\w\s-]/g," ")
-   .replace(/\s+/g," ").trim();
-}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-
-const PIZZAS = [
- {id:"barbacoa_iberica", name:"Barbacoa Ibérica", aliases:["barbacoa iberica"], ingredients:["salsa barbacoa","mozzarella","beicon","cerdo deshilachado","lomo adobado"]},
- {id:"barbacoa_cremosa", name:"Barbacoa cremosa", aliases:["barbacoa cremosa"], ingredients:["salsa cremosa de barbacoa y carbonara","mozzarella","pollo","beicon","champiñones","tomate natural o extra de queso"]},
- {id:"barbacoa_kebab", name:"Barbacoa Kebab", aliases:["barbacoa kebab"], ingredients:["salsa barbacoa","mozzarella","pollo","tomate natural","cebolla","queso de cabra"]},
- {id:"barbacoa_xtreme", name:"Barbacoa X-Treme", aliases:["barbacoa x-treme","barbacoa xtreme","barbacoa extreme"], ingredients:["salsa barbacoa","mozzarella","jamón york","beicon crujiente","carne picada","extra de barbacoa"]},
- {id:"barbacoa_dolce", name:"Barbacoa Dolce", aliases:["barbacoa dolce"], ingredients:["salsa barbacoa","mozzarella","queso provolone dulce","pechuga de pollo al horno","beicon crujiente","carne picada"]},
- {id:"texas_barbacoa", name:"Texas Barbacoa", aliases:["texas barbacoa"], ingredients:["salsa barbacoa","mozzarella","frankfurt","beicon","pollo","cheddar o maíz"]},
- {id:"barbacoa", name:"Barbacoa", aliases:["barbacoa"], ingredients:["salsa barbacoa","mozzarella","pollo","beicon","doble carne"]},
- {id:"fondue", name:"Fondue", aliases:["fondue"], ingredients:["salsa carbonara","mozzarella","queso provolone","semicurado","emmental","cheddar","queso de cabra"]},
- {id:"alpujarra", name:"De la Alpujarra", aliases:["de la alpujarra","alpujarra"], ingredients:["salsa de tomate","mozzarella","pepperoni","patatas gajo","huevo","un ingrediente a elegir"]},
- {id:"teriyaki", name:"Teriyaki", aliases:["teriyaki"], ingredients:["salsa teriyaki","mozzarella","pollo marinado","verdura en tempura"]},
- {id:"carbonara_gourmet", name:"Carbonara Gourmet", aliases:["carbonara gourmet"], ingredients:["salsa carbonara","mozzarella","queso provolone dulce","jamón york","pollo marinado","un ingrediente a elegir"]},
- {id:"carbonara", name:"Carbonara", aliases:["carbonara"], ingredients:["salsa carbonara","mozzarella","champiñones","doble beicon","cebolla o extra de queso"]},
- {id:"house", name:"House", aliases:["house"], ingredients:["salsa de tomate","mozzarella","pimiento rojo","pimiento verde","beicon","carne","champiñones o cebolla"]},
- {id:"chickenpop", name:"Chickenpop", aliases:["chickenpop","chicken pop"], ingredients:["salsa de tomate","mozzarella","palomitas de pollo","pepperoni","champiñones","queso cheddar"]},
- {id:"kids", name:"Kids", aliases:["kids"], ingredients:["salsa de tomate","mozzarella","doble beicon","doble patatas gajo"]},
- {id:"4_quesos", name:"4 quesos", aliases:["4 quesos","cuatro quesos"], ingredients:["salsa de tomate","mezcla especial de 4 quesos"]},
- {id:"vegetal", name:"Vegetal", aliases:["vegetal"], ingredients:["salsa de tomate","mozzarella","aceitunas negras","champiñones","cebolla","pimiento verde","pimiento rojo"]},
- {id:"hawaiana", name:"Hawaiana", aliases:["hawaiana"], ingredients:["salsa de tomate","mozzarella","doble jamón","piña","extra de queso"]},
- {id:"bolonesa", name:"Boloñesa", aliases:["bolonesa","boloñesa"], ingredients:["salsa de tomate","mozzarella","pollo","doble carne","cebolla","beicon"]},
- {id:"mediterranea", name:"Mediterránea", aliases:["mediterranea","mediterránea"], ingredients:["salsa de tomate","mozzarella","atún","aceitunas negras","pimiento verde","tomate natural"]},
- {id:"granjera", name:"Granjera", aliases:["granjera"], ingredients:["salsa de tomate","mozzarella","pollo","maíz","frankfurt","cebolla"]},
- {id:"piamontesa", name:"Piamontesa", aliases:["piamontesa"], ingredients:["salsa de tomate","mozzarella","beicon","champiñones","extra de queso"]},
- {id:"picante", name:"Picante", aliases:["picante"], ingredients:["salsa de tomate","mozzarella","salsa picante","pimiento rojo","carne"]},
- {id:"kebab_fusion", name:"Kebab fusión", aliases:["kebab fusion","kebab fusión"], ingredients:["salsa carbonara","carne de kebab de ternera","pollo marinado","salsa de yogur con especias"]}
+const MENU=[
+ {id:"barbacoa_iberica",name:"Barbacoa Ibérica",aliases:["barbacoa iberica"],ings:["salsa barbacoa","mozzarella","beicon","cerdo deshilachado","lomo adobado"]},
+ {id:"barbacoa_cremosa",name:"Barbacoa cremosa",aliases:["barbacoa cremosa"],ings:["salsa cremosa","mozzarella","pollo","beicon","champiñones","tomate natural o extra de queso"]},
+ {id:"barbacoa_kebab",name:"Barbacoa Kebab",aliases:["barbacoa kebab"],ings:["salsa barbacoa","mozzarella","pollo","tomate natural","cebolla","queso de cabra"]},
+ {id:"barbacoa_xtreme",name:"Barbacoa X-Treme",aliases:["barbacoa x-treme","barbacoa xtreme"],ings:["salsa barbacoa","mozzarella","jamón york","beicon crujiente","carne picada","extra de barbacoa"]},
+ {id:"barbacoa_dolce",name:"Barbacoa Dolce",aliases:["barbacoa dolce"],ings:["salsa barbacoa","mozzarella","queso provolone dulce","pechuga de pollo al horno","beicon crujiente","carne picada"]},
+ {id:"texas_barbacoa",name:"Texas Barbacoa",aliases:["texas barbacoa"],ings:["salsa barbacoa","mozzarella","frankfurt","beicon","pollo","cheddar o maíz"]},
+ {id:"barbacoa",name:"Barbacoa",aliases:["barbacoa"],ings:["salsa barbacoa","mozzarella","pollo","beicon","doble carne"]},
+ {id:"fondue",name:"Fondue",aliases:["fondue"],ings:["salsa carbonara","mozzarella","queso provolone","semicurado","emmental","cheddar","queso de cabra"]},
+ {id:"alpujarra",name:"De la Alpujarra",aliases:["de la alpujarra","alpujarra"],ings:["salsa de tomate","mozzarella","pepperoni","patatas gajo","huevo","un ingrediente a elegir"]},
+ {id:"teriyaki",name:"Teriyaki",aliases:["teriyaki"],ings:["salsa teriyaki","mozzarella","pollo marinado","verdura en tempura"]},
+ {id:"carbonara_gourmet",name:"Carbonara Gourmet",aliases:["carbonara gourmet"],ings:["salsa carbonara","mozzarella","queso provolone dulce","jamón york","pollo marinado","un ingrediente a elegir"]},
+ {id:"carbonara",name:"Carbonara",aliases:["carbonara"],ings:["salsa carbonara","mozzarella","champiñones","doble beicon","cebolla o extra de queso"]},
+ {id:"house",name:"House",aliases:["house"],ings:["salsa de tomate","mozzarella","pimiento rojo","pimiento verde","beicon","carne","champiñones o cebolla"]},
+ {id:"chickenpop",name:"Chickenpop",aliases:["chickenpop","chicken pop"],ings:["salsa de tomate","mozzarella","palomitas de pollo","pepperoni","champiñones","queso cheddar"]},
+ {id:"kids",name:"Kids",aliases:["kids"],ings:["salsa de tomate","mozzarella","doble beicon","doble patatas gajo"]},
+ {id:"4quesos",name:"4 quesos",aliases:["4 quesos","cuatro quesos"],ings:["salsa de tomate","mezcla especial de 4 quesos"]},
+ {id:"vegetal",name:"Vegetal",aliases:["vegetal"],ings:["salsa de tomate","mozzarella","aceitunas negras","champiñones","cebolla","pimiento verde","pimiento rojo"]},
+ {id:"hawaiana",name:"Hawaiana",aliases:["hawaiana"],ings:["salsa de tomate","mozzarella","doble jamón","piña","extra de queso"]},
+ {id:"bolonesa",name:"Boloñesa",aliases:["bolonesa","boloñesa"],ings:["salsa de tomate","mozzarella","pollo","doble carne","cebolla","beicon"]},
+ {id:"mediterranea",name:"Mediterránea",aliases:["mediterranea","mediterránea"],ings:["salsa de tomate","mozzarella","atún","aceitunas negras","pimiento verde","tomate natural"]},
+ {id:"granjera",name:"Granjera",aliases:["granjera"],ings:["salsa de tomate","mozzarella","pollo","maíz","frankfurt","cebolla"]},
+ {id:"piamontesa",name:"Piamontesa",aliases:["piamontesa"],ings:["salsa de tomate","mozzarella","beicon","champiñones","extra de queso"]},
+ {id:"picante",name:"Picante",aliases:["picante"],ings:["salsa de tomate","mozzarella","salsa picante","pimiento rojo","carne"]},
+ {id:"kebab_fusion",name:"Kebab fusión",aliases:["kebab fusion","kebab fusión"],ings:["salsa carbonara","carne de kebab de ternera","pollo marinado","salsa de yogur con especias"]}
 ];
 
-const INGREDIENTS = [
+const ING=[
  "cebolla","jamon","jamón","beicon","carne picada","pollo","pepperoni","frankfurt","piña",
  "champinones","champiñones","pimiento verde","pimiento rojo","aceitunas","queso de cabra","maiz","maíz","atun","atún",
  "palomitas de pollo","beicon crujiente","pechuga de pollo al horno","queso provolone","carne de kebab de ternera",
@@ -104,31 +82,68 @@ const INGREDIENTS = [
 let state;
 
 function resetState(){
- state={items:[], tipo:null, direccion:null, telefono:null, pago:null, confirmado:false, pending:null, pendingItem:null, lastPizzaId:null};
+ state={items:[],current:null,tipo:null,direccion:null,telefono:null,pago:null,pending:null,confirmed:false};
  renderOrder();
 }
-
-function add(w,t){
- chat.innerHTML+=`<div class="${w}">${w==="a"?"PizzaIA":"Cliente"}: ${escapeHtml(t)}</div>`;
- chat.scrollTop=chat.scrollHeight;
-}
+function norm(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\w\s-]/g," ").replace(/\s+/g," ").trim()}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function add(w,t){chat.innerHTML+=`<div class="${w}">${w==="a"?"PizzaIA":"Cliente"}: ${esc(t)}</div>`;chat.scrollTop=chat.scrollHeight}
 function stat(t){status.textContent=t}
 function orbMode(m){orb.className="orb"+(m?" "+m:"")}
 
-function setup(){
- if(!SR){stat("Tu navegador no soporta reconocimiento de voz. Prueba Chrome o Edge.");return}
- recognition=new SR(); recognition.lang="es-ES"; recognition.interimResults=false; recognition.continuous=false;
- recognition.onstart=()=>{listening=true;orbMode("listen");stat("🎙️ Escuchando...")};
- recognition.onend=()=>{listening=false;orbMode("");if(callActive&&!speaking)setTimeout(listen,400)};
- recognition.onerror=()=>{listening=false;orbMode("");if(callActive&&!speaking)setTimeout(listen,750)};
- recognition.onresult=e=>{const t=e.results[0][0].transcript;add("u",t);processText(t)};
+
+function unlockAudio(){
+  if(audioUnlocked)return;
+  audioUnlocked=true;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(AC){
+      const ctx=new AC();
+      if(ctx.state==="suspended")ctx.resume();
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      gain.gain.value=0.00001;
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime+0.02);
+      window.__pizzaAudioContext=ctx;
+    }
+  }catch(e){}
+  try{
+    speechSynthesis.cancel();
+    const warmup=new SpeechSynthesisUtterance(" ");
+    warmup.volume=0;
+    speechSynthesis.speak(warmup);
+  }catch(e){}
 }
 
-function listen(){if(!callActive||speaking||listening||!recognition)return;try{recognition.start()}catch(e){}}
-
+function setup(){
+ if(!SR){stat("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");return}
+ recognition=new SR();recognition.lang="es-ES";recognition.interimResults=false;recognition.continuous=false;recognition.maxAlternatives=1;
+ recognition.onstart=()=>{listening=true;orbMode("listen");stat("🎙️ Escuchando...")};
+ recognition.onend=()=>{listening=false;orbMode("");if(callActive&&!speaking)setTimeout(listen,400)};
+ recognition.onerror=()=>{listening=false;orbMode("");if(callActive&&!speaking)setTimeout(listen,700)};
+ recognition.onresult=e=>{
+  let t="";
+  for(let i=e.resultIndex;i<e.results.length;i++){
+    if(e.results[i].isFinal)t+=e.results[i][0].transcript+" ";
+  }
+  t=t.trim();
+  if(t){add("u",t);processText(t)}
+};
+}
+function listen(){
+  if(!callActive||speaking||listening||!recognition)return;
+  stat("🎙️ Activando micrófono...");
+  try{recognition.start()}
+  catch(e){
+    stat("⚠️ No se pudo iniciar la escucha");
+    console.error("SpeechRecognition start:",e);
+    if(callActive&&!speaking)setTimeout(listen,1000);
+  }
+}
 function say(t){
- add("a",t); speaking=true;orbMode("speak");stat("🔊 PizzaIA hablando...");
- try{if(listening)recognition.abort()}catch(e){}
+ add("a",t);speaking=true;orbMode("speak");stat("🔊 PizzaIA hablando...");
+ try{if(listening)recognition.stop()}catch(e){}
  speechSynthesis.cancel();
  const u=new SpeechSynthesisUtterance(t);u.lang="es-ES";u.rate=.97;
  u.onend=()=>{speaking=false;orbMode("");if(callActive){stat("🎙️ Tu turno");setTimeout(listen,400)}};
@@ -136,248 +151,209 @@ function say(t){
  speechSynthesis.speak(u);
 }
 
-function startCall(){
- if(!recognition)setup();
- if(!SR){alert("Prueba con Chrome o Edge actualizado.");return}
- if(callActive)return;
- resetState();chat.innerHTML="";callActive=true;
- say("Hola, gracias por llamar a PizzaIA. ¿Qué te gustaría pedir?");
+async function ensureMicrophone(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    throw new Error("getUserMedia-no-disponible");
+  }
+  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  stream.getTracks().forEach(t=>t.stop());
+  return true;
 }
 
-function endCall(){
- callActive=false;speaking=false;
- try{recognition&&recognition.abort()}catch(e){}
- speechSynthesis.cancel();orbMode("");stat("Llamada finalizada");
+async function startCall(){
+  unlockAudio();
+  if(!SR){alert("Este navegador no ofrece reconocimiento de voz compatible. Usa Google Chrome actualizado.");return}
+  if(callActive)return;
+  stat("🎙️ Comprobando micrófono...");
+  try{await ensureMicrophone()}
+  catch(e){
+    stat("⛔ No se pudo acceder al micrófono");
+    add("a","No puedo acceder al micrófono. Pulsa el icono de permisos junto a la dirección y permite el micrófono para esta web.");
+    console.error(e);return;
+  }
+  if(!recognition)setup();
+  resetState();chat.innerHTML="";callActive=true;
+  say("Buenas. Gracias por llamar a PizzaIA. ¿Qué te gustaría pedir?");
 }
+function endCall(){callActive=false;speaking=false;try{recognition&&recognition.abort()}catch(e){}speechSynthesis.cancel();orbMode("");stat("Llamada finalizada")}
 
-function pizzaById(id){return PIZZAS.find(p=>p.id===id)}
-
-function findPizzaMentions(text){
+function findPizza(text){
  const n=norm(text);
- const candidates=[];
- for(const p of PIZZAS){
-   for(const alias0 of p.aliases){
-     const alias=norm(alias0);
-     let start=n.indexOf(alias);
-     if(start>=0) candidates.push({p,start,end:start+alias.length,len:alias.length});
+ let best=null,bestLen=0;
+ for(const p of MENU){
+   for(const a0 of p.aliases){
+     const a=norm(a0);
+     if(n.includes(a)&&a.length>bestLen){best=p;bestLen=a.length}
    }
  }
- candidates.sort((a,b)=>a.start-b.start || b.len-a.len);
-
- const chosen=[];
- for(const c of candidates){
-   const overlaps=chosen.some(x=>!(c.end<=x.start || c.start>=x.end));
-   if(!overlaps) chosen.push(c);
- }
- return chosen.sort((a,b)=>a.start-b.start).map(x=>x.p);
+ return best;
 }
-
-function getSize(n){
- if(/\bpequena\b|25 cm/.test(n))return "pequeña";
- if(/\bmediana\b|30 cm/.test(n))return "mediana";
- if(/\bfamiliar\b|40 cm|\bgrande\b/.test(n))return "familiar";
+function sizeOf(n){
+ if(/\bpequena\b|25 cm/.test(n))return"pequeña";
+ if(/\bmediana\b|30 cm/.test(n))return"mediana";
+ if(/\bfamiliar\b|40 cm|\bgrande\b/.test(n))return"familiar";
  return null;
 }
-function getCrust(n){
- if(/\bclasica\b/.test(n))return "clásica";
- if(/\bfina\b/.test(n))return "fina";
- if(/\bdoble\b/.test(n))return "doble";
+function crustOf(n){
+ if(/\bclasica\b/.test(n))return"clásica";
+ if(/\bfina\b/.test(n))return"fina";
+ if(/\bdoble\b/.test(n))return"doble";
  return null;
 }
-
-function getMods(n){
- const remove=[],extra=[];
- const nn=norm(n);
- for(const ing0 of INGREDIENTS){
-   const ing=norm(ing0);
-   if(nn.includes("sin "+ing)||nn.includes("quita "+ing)||nn.includes("quitar "+ing)) remove.push(ing0);
-   if(nn.includes("extra de "+ing)||nn.includes(ing+" extra")||nn.includes("anade "+ing)||nn.includes("añade "+ing)) extra.push(ing0);
+function modsOf(text){
+ const n=norm(text),remove=[],extra=[];
+ for(const raw of ING){
+   const x=norm(raw);
+   if(n.includes("sin "+x)||n.includes("quita "+x)||n.includes("quitale "+x)||n.includes("quitar "+x)||n.includes("sacale "+x))remove.push(raw);
+   if(n.includes("extra de "+x)||n.includes(x+" extra")||n.includes("anade "+x)||n.includes("ponle "+x)||n.includes("agrega "+x))extra.push(raw);
  }
  return {remove:[...new Set(remove)],extra:[...new Set(extra)]};
 }
+function currentItem(){return state.current===null?null:state.items[state.current]}
 
 function renderOrder(){
- if(!state||!state.items.length){orderView.innerHTML="Todavía no hay productos.";return}
- let s=state.items.map((x,i)=>{
-   const parts=[x.size?x.size:"tamaño pendiente",x.crust?"masa "+x.crust:"masa pendiente"];
-   if(x.remove.length)parts.push("sin "+x.remove.join(", "));
-   if(x.extra.length)parts.push("extra "+x.extra.join(", "));
-   return `<div class="orderline">🍕 ${i+1}. <b>${escapeHtml(x.name)}</b> — ${escapeHtml(parts.join(" · "))}</div>`;
+ if(!state||!state.items.length){orderView.innerHTML="Sin pedido todavía.";return}
+ let out=state.items.map((x,i)=>{
+   let bits=[x.size||"tamaño pendiente",x.crust?"masa "+x.crust:"masa pendiente"];
+   if(x.remove.length)bits.push("SIN "+x.remove.join(", "));
+   if(x.extra.length)bits.push("EXTRA "+x.extra.join(", "));
+   return `<div>🍕 ${i+1}. <b>${esc(x.name)}</b> — ${esc(bits.join(" · "))}</div>`;
  }).join("");
  const meta=[];
  if(state.tipo)meta.push("🚗 "+state.tipo);
  if(state.direccion)meta.push("📍 "+state.direccion);
  if(state.telefono)meta.push("📞 "+state.telefono);
  if(state.pago)meta.push("💳 "+state.pago);
- if(meta.length)s+=`<div style="margin-top:10px">${meta.map(escapeHtml).join("<br>")}</div>`;
- orderView.innerHTML=s;
+ if(meta.length)out+=`<p>${meta.map(esc).join("<br>")}</p>`;
+ orderView.innerHTML=out;
 }
 
-function askNextForItem(index){
- const x=state.items[index];
- if(!x)return false;
- if(!x.size){
-   state.pending="size";state.pendingItem=index;
-   say(`¿Qué tamaño quieres para la ${x.name}: pequeña, mediana o familiar?`);
-   return true;
- }
- if(!x.crust){
-   state.pending="crust";state.pendingItem=index;
-   say(`¿Qué masa quieres para la ${x.name}: clásica, fina o doble?`);
-   return true;
- }
- state.pending=null;state.pendingItem=null;
- return false;
+function summary(){
+ if(!state.items.length)return"No tienes ninguna pizza apuntada todavía.";
+ let s=state.items.map((x,i)=>{
+   let t=`${i+1}. ${x.name}`;
+   if(x.size)t+=` ${x.size}`;
+   if(x.crust)t+=`, masa ${x.crust}`;
+   if(x.remove.length)t+=`, sin ${x.remove.join(" ni ")}`;
+   if(x.extra.length)t+=`, con extra de ${x.extra.join(" y ")}`;
+   return t;
+ }).join(". ");
+ let tail="";
+ if(state.tipo)tail+=` Es para ${state.tipo}.`;
+ if(state.direccion)tail+=` Dirección ${state.direccion}.`;
+ if(state.pago)tail+=` Pago ${state.pago}.`;
+ return"Has pedido: "+s+"."+tail;
 }
 
-function orderSummary(){
- const parts=state.items.map((x,i)=>{
-   let s=`${i+1}, ${x.name}`;
-   if(x.size)s+=` ${x.size}`;
-   if(x.crust)s+=`, masa ${x.crust}`;
-   if(x.remove.length)s+=`, sin ${x.remove.join(" ni ")}`;
-   if(x.extra.length)s+=`, con extra de ${x.extra.join(" y ")}`;
-   return s;
- });
- let out="Tu pedido es: "+parts.join(". ")+".";
- if(state.tipo)out+=` Es para ${state.tipo}.`;
- if(state.direccion)out+=` Dirección: ${state.direccion}.`;
- if(state.pago)out+=` Pago: ${state.pago}.`;
- return out;
+function resumeItem(){
+ const x=currentItem();
+ if(!x)return;
+ if(!x.size){state.pending="size";say(`¿Qué tamaño quieres para la ${x.name}: pequeña, mediana o familiar?`);return}
+ if(!x.crust){state.pending="crust";say(`¿Qué masa quieres para la ${x.name}: clásica, fina o doble?`);return}
+ state.pending=null;say(`Perfecto. La ${x.name} queda apuntada. ¿Quieres añadir algo más?`);
 }
 
-function continueCheckout(){
+function checkout(){
  if(!state.items.length){say("Todavía no tengo ninguna pizza en el pedido.");return}
- for(let i=0;i<state.items.length;i++){ if(askNextForItem(i))return; }
- if(!state.tipo){say("Perfecto. ¿Es para recoger o a domicilio?");state.pending="tipo";return}
- if(state.tipo==="domicilio"&&!state.direccion){say("¿Cuál es la dirección de entrega?");state.pending="direccion";return}
- if(state.tipo==="domicilio"&&!state.telefono){say("¿Qué número de teléfono dejamos al repartidor?");state.pending="telefono";return}
- if(!state.pago){say("¿Pagarás en efectivo o con tarjeta?");state.pending="pago";return}
- say(orderSummary()+" ¿Confirmas el pedido?");state.pending="confirm";
-}
-
-function answerMenuQuestion(n){
- const mentions=findPizzaMentions(n);
- if(mentions.length && /que lleva|que tiene|ingredientes|lleva/.test(n)){
-   const p=mentions[0];
-   say(`${p.name} lleva ${p.ingredients.join(", ")}.`);
-   return true;
+ for(let i=0;i<state.items.length;i++){
+   state.current=i;
+   const x=currentItem();
+   if(!x.size){state.pending="size";say(`Antes de cerrar, ¿qué tamaño quieres para la ${x.name}?`);return}
+   if(!x.crust){state.pending="crust";say(`Antes de cerrar, ¿qué masa quieres para la ${x.name}?`);return}
  }
- if(/que pizzas|que teneis|que tenéis|carta|menu|menú/.test(n)){
-   say("Tenemos Fondue, Barbacoa Ibérica, De la Alpujarra, Teriyaki, Barbacoa, Carbonara, House, Barbacoa cremosa, Barbacoa Kebab, Chickenpop, Carbonara Gourmet, Kids, Barbacoa X-Treme, 4 quesos, Vegetal, Hawaiana, Boloñesa, Mediterránea, Granjera, Piamontesa, Picante, Barbacoa Dolce, Kebab fusión y Texas Barbacoa.");
-   return true;
- }
- return false;
+ if(!state.tipo){state.pending="tipo";say("¿Es para recoger o a domicilio?");return}
+ if(state.tipo==="domicilio"&&!state.direccion){state.pending="direccion";say("¿Cuál es la dirección de entrega?");return}
+ if(state.tipo==="domicilio"&&!state.telefono){state.pending="telefono";say("¿Qué teléfono dejamos al repartidor?");return}
+ if(!state.pago){state.pending="pago";say("¿Pagarás en efectivo o con tarjeta?");return}
+ state.pending="confirm";say(summary()+" ¿Confirmas el pedido?");
 }
 
 function processText(text){
  const n=norm(text);
 
- if(answerMenuQuestion(n))return;
-
- // Always allow reset
- if(/cancelar pedido|borra todo|empezar de nuevo/.test(n)){
-   resetState();say("He borrado el pedido. Empezamos de nuevo. ¿Qué te gustaría pedir?");return;
+ // 1) INTENCIONES GLOBALES: funcionan SIEMPRE, aunque haya una pregunta pendiente.
+ if(/dime mi pedido|dime el pedido|que he pedido|que llevo|repiteme el pedido|repite el pedido|resumen del pedido|resumen/.test(n)){
+   say(summary());return;
  }
 
- // Pending steps: do not jump to another branch unless the answer really matches.
- if(state.pending==="size"){
-   const size=getSize(n);
-   if(!size){say("Solo necesito el tamaño: pequeña, mediana o familiar.");return}
-   state.items[state.pendingItem].size=size;renderOrder();
-   const idx=state.pendingItem;state.pending=null;state.pendingItem=null;
-   if(askNextForItem(idx))return;
-   say("Perfecto. ¿Quieres añadir algo más?");return;
+ if(/cancelar todo|borra todo|empezar de nuevo/.test(n)){
+   resetState();say("Pedido borrado. Empezamos de nuevo. ¿Qué te gustaría pedir?");return;
  }
- if(state.pending==="crust"){
-   const crust=getCrust(n);
-   if(!crust){say("Solo necesito la masa: clásica, fina o doble.");return}
-   const x=state.items[state.pendingItem];
-   if(crust==="doble" && x.size!=="mediana"){
-     say("La masa doble solo está disponible en tamaño mediano. ¿Quieres cambiar esa pizza a mediana o elegir masa clásica o fina?");
-     return;
-   }
-   x.crust=crust;renderOrder();
-   state.pending=null;state.pendingItem=null;
-   say("Perfecto. ¿Quieres añadir algo más?");return;
+
+ // 2) CAMBIOS DE INGREDIENTES: prioridad alta, no vuelve al principio.
+ const mods=modsOf(text);
+ if((mods.remove.length||mods.extra.length)&&state.items.length){
+   const x=currentItem()||state.items[state.items.length-1];
+   x.remove=[...new Set([...x.remove,...mods.remove])];
+   x.extra=[...new Set([...x.extra,...mods.extra])];
+   renderOrder();
+   let cambios=[];
+   if(mods.remove.length)cambios.push("he quitado "+mods.remove.join(", "));
+   if(mods.extra.length)cambios.push("he añadido extra de "+mods.extra.join(", "));
+   say(`Perfecto, ${cambios.join(" y ")} en la ${x.name}.`);
+   // Conserva el pedido y retoma solo lo que falte.
+   setTimeout(()=>resumeItem(),650);
+   return;
  }
- if(state.pending==="tipo"){
-   if(/domicilio|a casa|reparto/.test(n)){state.tipo="domicilio";renderOrder();state.pending="direccion";say("Perfecto. ¿Cuál es la dirección de entrega?");return}
-   if(/recoger|recojo|local|para llevar/.test(n)){state.tipo="recoger";renderOrder();state.pending="pago";say("Perfecto. ¿Pagarás en efectivo o con tarjeta?");return}
-   say("¿Es para recoger o a domicilio?");return;
+
+ // 3) CONSULTAS DE CARTA.
+ const mentioned=findPizza(text);
+ if(mentioned && /que lleva|que tiene|ingredientes/.test(n)){
+   say(`${mentioned.name} lleva ${mentioned.ings.join(", ")}.`);return;
  }
+
+ // 4) NUEVA PIZZA.
+ if(mentioned){
+   const item={id:mentioned.id,name:mentioned.name,size:sizeOf(n),crust:crustOf(n),remove:[],extra:[]};
+   state.items.push(item);state.current=state.items.length-1;renderOrder();
+   resumeItem();return;
+ }
+
+ // 5) TAMAÑO / MASA pueden responderse en cualquier momento.
+ const sz=sizeOf(n);
+ if(sz && state.items.length){
+   const x=currentItem()||state.items[state.items.length-1];
+   x.size=sz;renderOrder();
+   if(x.crust==="doble"&&sz!=="mediana"){x.crust=null;renderOrder();say("La masa doble solo está disponible en mediana. Elige masa clásica o fina.");state.pending="crust";return}
+   resumeItem();return;
+ }
+ const cr=crustOf(n);
+ if(cr && state.items.length){
+   const x=currentItem()||state.items[state.items.length-1];
+   if(cr==="doble"&&x.size&&x.size!=="mediana"){say("La masa doble solo está disponible en tamaño mediano. Puedes elegir clásica o fina, o cambiar a mediana.");return}
+   x.crust=cr;renderOrder();resumeItem();return;
+ }
+
+ // 6) Flujo de entrega/pago.
+ if(/domicilio|a casa|reparto/.test(n)){state.tipo="domicilio";state.pending="direccion";renderOrder();say("Perfecto. ¿Cuál es la dirección de entrega?");return}
+ if(/recoger|recojo|local|para llevar/.test(n)){state.tipo="recoger";state.pending="pago";renderOrder();say("Perfecto. ¿Pagarás en efectivo o con tarjeta?");return}
+
  if(state.pending==="direccion"){
-   state.direccion=text;renderOrder();state.pending="telefono";say("Gracias. ¿Qué número de teléfono dejamos al repartidor?");return;
+   state.direccion=text;state.pending="telefono";renderOrder();say("Gracias. ¿Qué número de teléfono dejamos al repartidor?");return;
  }
  if(state.pending==="telefono"){
    const d=text.replace(/\D/g,"");
    if(d.length<9){say("No he entendido bien el teléfono. Repítelo, por favor.");return}
-   state.telefono=d;renderOrder();state.pending="pago";say("Perfecto. ¿Pagarás en efectivo o con tarjeta?");return;
+   state.telefono=d;state.pending="pago";renderOrder();say("Perfecto. ¿Pagarás en efectivo o con tarjeta?");return;
  }
- if(state.pending==="pago"){
-   if(/tarjeta/.test(n)){state.pago="tarjeta";renderOrder();state.pending="confirm";say(orderSummary()+" ¿Confirmas el pedido?");return}
-   if(/efectivo/.test(n)){state.pago="efectivo";renderOrder();state.pending="confirm";say(orderSummary()+" ¿Confirmas el pedido?");return}
-   say("¿Pagarás en efectivo o con tarjeta?");return;
- }
+ if(/tarjeta/.test(n)){state.pago="tarjeta";renderOrder();checkout();return}
+ if(/efectivo/.test(n)){state.pago="efectivo";renderOrder();checkout();return}
+
+ if(/eso es todo|nada mas|nada más|ya esta|ya está|terminado|cerrar pedido|confirmar pedido/.test(n)){checkout();return}
+
  if(state.pending==="confirm"){
    if(/\bsi\b|confirmo|correcto|vale|perfecto/.test(n)){
-     state.confirmado=true;say("Pedido confirmado. En la versión conectada, ahora se enviaría la comanda a cocina. Muchas gracias.");
+     state.confirmed=true;say("Pedido confirmado. En la versión conectada se enviaría ahora la comanda a cocina. Muchas gracias.");
      setTimeout(endCall,4500);return;
    }
-   state.pending=null;
-   say("De acuerdo. Dime qué quieres cambiar.");return;
+   say("De acuerdo. El pedido sigue guardado. Dime qué quieres cambiar.");state.pending=null;return;
  }
 
- // Delivery / pickup volunteered
- if(/domicilio|a casa|reparto/.test(n)){state.tipo="domicilio";renderOrder();continueCheckout();return}
- if(/recoger|recojo|local|para llevar/.test(n)){state.tipo="recoger";renderOrder();continueCheckout();return}
-
- // Ask current order
- if(/que he pedido|repite el pedido|resumen/.test(n)){say(orderSummary());return}
-
- // Modify most recent item if no pizza name mentioned
- const mentions=findPizzaMentions(n);
- const mods=getMods(n), size=getSize(n), crust=getCrust(n);
- if(!mentions.length && state.items.length && (mods.remove.length||mods.extra.length||size||crust)){
-   const x=state.items[state.items.length-1];
-   if(size)x.size=size;
-   if(crust){
-     if(crust==="doble" && x.size && x.size!=="mediana"){say("La masa doble solo está disponible en mediana.");return}
-     x.crust=crust;
-   }
-   x.remove=[...new Set([...x.remove,...mods.remove])];
-   x.extra=[...new Set([...x.extra,...mods.extra])];
-   renderOrder();
-   if(askNextForItem(state.items.length-1))return;
-   say(`Perfecto, he actualizado la ${x.name}. ¿Algo más?`);return;
- }
-
- // Add mentioned pizzas, longest names win.
- if(mentions.length){
-   const globalSize=getSize(n),globalCrust=getCrust(n),globalMods=getMods(n);
-   for(const p of mentions){
-     state.items.push({id:p.id,name:p.name,size:globalSize,crust:globalCrust,remove:[...globalMods.remove],extra:[...globalMods.extra]});
-     state.lastPizzaId=p.id;
-   }
-   renderOrder();
-   const firstNew=state.items.length-mentions.length;
-   if(askNextForItem(firstNew))return;
-   say(mentions.length===1?`Perfecto, he añadido la ${mentions[0].name}. ¿Quieres algo más?`:"Perfecto, he añadido esas pizzas. ¿Quieres algo más?");
-   return;
- }
-
- if(/eso es todo|nada mas|nada más|ya esta|ya está|terminado|confirmar/.test(n)){
-   continueCheckout();return;
- }
-
- if(/quita la ultima|quita la última|borra la ultima|borra la última/.test(n) && state.items.length){
-   const x=state.items.pop();renderOrder();say(`He quitado la ${x.name}. ¿Algo más?`);return;
- }
-
- say("No quiero inventarme nada. Repíteme qué pizza quieres, o dime el cambio exacto, por ejemplo: “sin cebolla”, “mediana” o “masa fina”.");
+ // 7) Si no entiende, NO reinicia ni borra nada.
+ say("No he entendido esa parte, pero tu pedido sigue guardado. Puedes decirme un cambio, pedir que te repita el pedido o continuar con el pedido.");
 }
 
-function demoText(){
+function testText(){
  if(!callActive){resetState();chat.innerHTML="";callActive=true;stat("Modo texto");}
  const t=prompt("Escribe lo que diría el cliente:");
  if(t){add("u",t);processText(t);}
@@ -385,5 +361,4 @@ function demoText(){
 
 resetState();setup();
 </script>
-</body>
-</html>
+</body></html>
