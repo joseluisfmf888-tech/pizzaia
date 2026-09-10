@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PizzaIA V8 · Micrófono corregido</title>
+<title>PizzaIA V9 · Comprensión mejorada</title>
 <style>
 body{margin:0;background:#0b0b0f;color:#fff;font-family:Arial,sans-serif}
 .wrap{max-width:980px;margin:auto;padding:28px}
@@ -21,8 +21,8 @@ button{border:0;border-radius:12px;padding:14px 18px;font-weight:bold;font-size:
 </head>
 <body><div class="wrap">
 <div class="card">
-<h1>Pizza<span class="orange">IA</span> V8</h1>
-<p class="muted">Versión corregida: comprueba el micrófono real, muestra errores de voz y reinicia la escucha automáticamente.</p>
+<h1>Pizza<span class="orange">IA</span> V9</h1>
+<p class="muted">Voz estable + comprensión mejorada: entiende formas naturales de pedir, cambiar ingredientes y consultar el pedido.</p>
 <div id="orb" class="orb">🍕</div>
 <div id="status" class="status">Llamada detenida</div>
 <div class="controls">
@@ -37,7 +37,7 @@ button{border:0;border-radius:12px;padding:14px 18px;font-weight:bold;font-size:
 <div class="card small muted"><b>Diagnóstico:</b> tras pulsar “Iniciar llamada”, debe pasar por “Comprobando micrófono” → “PizzaIA hablando” → “Escuchando”. Si falla, verás el error exacto arriba.</div>
 <div class="card small muted">
 <b>Importante:</b> al pulsar “Iniciar llamada”, permite el micrófono una sola vez. Si Chrome o Edge muestra permiso de sonido, selecciona “Permitir siempre para este sitio”.<br><br>
-Prueba exacta: “Quiero una barbacoa mediana” → “masa fina” → “quítale el beicon” → “ponle jamón extra” → “dime mi pedido”.
+Prueba: “Quiero una barbacoa mediana” → “masa fina” → “quítale el beicon y ponle jamón extra” → “dime qué llevo pedido”. Si dices “Margarita”, te avisará de que no figura en la carta cargada.
 </div>
 </div>
 
@@ -78,6 +78,19 @@ const ING=[
  "palomitas de pollo","beicon crujiente","pechuga de pollo al horno","queso provolone","carne de kebab de ternera",
  "tomate natural","cerdo deshilachado","lomo adobado","huevo","patatas gajo","queso cheddar","cheddar"
 ];
+
+const NO_EN_CARTA = ["margarita","prosciutto"];
+
+function parecePedidoPizza(n){
+  return /\b(quiero|ponme|dame|pido|quisiera|me pones|una pizza|dos pizzas|pizza)\b/.test(n);
+}
+
+function nombreNoDisponible(n){
+  for(const x of NO_EN_CARTA){
+    if(n.includes(x)) return x;
+  }
+  return null;
+}
 
 let state;
 
@@ -204,8 +217,31 @@ function modsOf(text){
  const n=norm(text),remove=[],extra=[];
  for(const raw of ING){
    const x=norm(raw);
-   if(n.includes("sin "+x)||n.includes("quita "+x)||n.includes("quitale "+x)||n.includes("quitar "+x)||n.includes("sacale "+x))remove.push(raw);
-   if(n.includes("extra de "+x)||n.includes(x+" extra")||n.includes("anade "+x)||n.includes("ponle "+x)||n.includes("agrega "+x))extra.push(raw);
+   if(
+     n.includes("sin "+x) || n.includes("quita "+x) || n.includes("quitale "+x) ||
+     n.includes("quitar "+x) || n.includes("sacale "+x) || n.includes("saca "+x) ||
+     n.includes("elimina "+x) || n.includes("no quiero "+x)
+   ) remove.push(raw);
+
+   if(
+     n.includes("extra de "+x) || n.includes(x+" extra") || n.includes("anade "+x) ||
+     n.includes("ponle "+x) || n.includes("agrega "+x) || n.includes("echale "+x) ||
+     n.includes("con "+x+" extra")
+   ) extra.push(raw);
+ }
+
+ // "cambia X por Y" / "sustituye X por Y"
+ for(const a of ING){
+   for(const b of ING){
+     const aa=norm(a), bb=norm(b);
+     if(
+       n.includes("cambia "+aa+" por "+bb) ||
+       n.includes("cambiame "+aa+" por "+bb) ||
+       n.includes("sustituye "+aa+" por "+bb)
+     ){
+       remove.push(a); extra.push(b);
+     }
+   }
  }
  return {remove:[...new Set(remove)],extra:[...new Set(extra)]};
 }
@@ -272,12 +308,20 @@ function processText(text){
  const n=norm(text);
 
  // 1) INTENCIONES GLOBALES: funcionan SIEMPRE, aunque haya una pregunta pendiente.
- if(/dime mi pedido|dime el pedido|que he pedido|que llevo|repiteme el pedido|repite el pedido|resumen del pedido|resumen/.test(n)){
+ if(/dime mi pedido|dime el pedido|que he pedido|que llevo|que llevo pedido|que tengo pedido|que tengo apuntado|repiteme el pedido|repite el pedido|repasame el pedido|resumen del pedido|resumen/.test(n)){
    say(summary());return;
  }
 
  if(/cancelar todo|borra todo|empezar de nuevo/.test(n)){
    resetState();say("Pedido borrado. Empezamos de nuevo. ¿Qué te gustaría pedir?");return;
+ }
+
+ // Si reconoce una pizza conocida pero NO está en la carta cargada, no finge que no entendió.
+ const fuera=nombreNoDisponible(n);
+ if(fuera && parecePedidoPizza(n)){
+   const bonito=fuera.charAt(0).toUpperCase()+fuera.slice(1);
+   say(`${bonito} no figura en la carta que tengo cargada. Si quieres, te digo las especialidades disponibles o puedes pedirme otra pizza.`);
+   return;
  }
 
  // 2) CAMBIOS DE INGREDIENTES: prioridad alta, no vuelve al principio.
@@ -350,6 +394,10 @@ function processText(text){
  }
 
  // 7) Si no entiende, NO reinicia ni borra nada.
+ if(parecePedidoPizza(n)){
+   say("He entendido que quieres pedir una pizza, pero no reconozco ese nombre en la carta cargada. Dime el nombre de la especialidad otra vez o pregúntame qué pizzas tenemos.");
+   return;
+ }
  say("No he entendido esa parte, pero tu pedido sigue guardado. Puedes decirme un cambio, pedir que te repita el pedido o continuar con el pedido.");
 }
 
